@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mini E-Commerce Storefront</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  input {
+    padding: 8px;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+    gap: 15px;
+  }
+
+  .product {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .cart, .checkout {
+    background: white;
+    margin-top: 30px;
+    padding: 15px;
+    border-radius: 8px;
+  }
+
+  .checkout {
+    display: none;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>Mini E-Commerce Store</h1>
+
+<!-- SEARCH -->
+<input type="text" id="search" placeholder="Search products...">
+
+<!-- PRODUCTS -->
+<div class="products" id="products"></div>
+
+<!-- CART -->
+<div class="cart">
+  <h2>Shopping Cart</h2>
+  <div id="cartItems">Cart is empty</div>
+  <p><b>Total:</b> ₹<span id="total">0</span></p>
+  <button onclick="showCheckout()">Checkout</button>
+</div>
+
+<!-- CHECKOUT -->
+<div class="checkout" id="checkout">
+  <h2>Checkout</h2>
+  <input id="name" placeholder="Full Name">
+  <input id="address" placeholder="Address">
+  <input id="mobile" placeholder="Mobile Number">
+  <button onclick="placeOrder()">Place Order</button>
+</div>
+
+<script>
+  // DATA
+  var products = [
+    { id: 1, name: "Laptop", price: 50000 },
+    { id: 2, name: "Mobile", price: 15000 },
+    { id: 3, name: "Headphones", price: 2000 },
+    { id: 4, name: "Keyboard", price: 1000 }
+  ];
+
+  var cart = [];
+
+  var productsDiv = document.getElementById("products");
+  var cartDiv = document.getElementById("cartItems");
+  var totalSpan = document.getElementById("total");
+
+  // DISPLAY PRODUCTS
+  function displayProducts(list) {
+    productsDiv.innerHTML = "";
+
+    for (var i = 0; i < list.length; i++) {
+      (function(p) {
+        var d = document.createElement("div");
+        d.className = "product";
+
+        d.innerHTML =
+          "<h3>" + p.name + "</h3>" +
+          "<p>₹" + p.price + "</p>";
+
+        var btn = document.createElement("button");
+        btn.innerText = "Add to Cart";
+        btn.onclick = function () {
+          alert(p.name + " added to cart!");
+          addToCart(p.id);
+        };
+
+        d.appendChild(btn);
+        productsDiv.appendChild(d);
+      })(list[i]);
+    }
+  }
+
+  displayProducts(products);
+
+  // ADD TO CART
+  function addToCart(id) {
+    for (var i = 0; i < cart.length; i++) {
+      if (cart[i].id === id) {
+        cart[i].qty++;
+        updateCart();
+        return;
+      }
+    }
+
+    for (var j = 0; j < products.length; j++) {
+      if (products[j].id === id) {
+        cart.push({
+          id: products[j].id,
+          name: products[j].name,
+          price: products[j].price,
+          qty: 1
+        });
+      }
+    }
+    updateCart();
+  }
+
+  // UPDATE CART
+  function updateCart() {
+    cartDiv.innerHTML = "";
+    var total = 0;
+
+    if (cart.length === 0) {
+      cartDiv.innerText = "Cart is empty";
+    }
+
+    for (var i = 0; i < cart.length; i++) {
+      total += cart[i].price * cart[i].qty;
+
+      cartDiv.innerHTML +=
+        cart[i].name + " x " + cart[i].qty +
+        " <button onclick='changeQty(" + cart[i].id + ",1)'>+</button>" +
+        " <button onclick='changeQty(" + cart[i].id + ",-1)'>-</button><br>";
+    }
+
+    totalSpan.innerText = total;
+  }
+
+  // CHANGE QUANTITY
+  function changeQty(id, change) {
+    for (var i = 0; i < cart.length; i++) {
+      if (cart[i].id === id) {
+        cart[i].qty += change;
+        if (cart[i].qty <= 0) {
+          cart.splice(i, 1);
+        }
+        break;
+      }
+    }
+    updateCart();
+  }
+
+  // SEARCH
+  document.getElementById("search").oninput = function(e) {
+    var value = e.target.value.toLowerCase();
+    var filtered = [];
+
+    for (var i = 0; i < products.length; i++) {
+      if (products[i].name.toLowerCase().indexOf(value) !== -1) {
+        filtered.push(products[i]);
+      }
+    }
+    displayProducts(filtered);
+  };
+
+  // CHECKOUT
+  function showCheckout() {
+    if (cart.length === 0) {
+      alert("Cart is empty!");
+      return;
+    }
+    document.getElementById("checkout").style.display = "block";
+  }
+
+  function placeOrder() {
+    var name = document.getElementById("name").value;
+    var address = document.getElementById("address").value;
+    var mobile = document.getElementById("mobile").value;
+
+    if (name === "" || address === "" || mobile === "") {
+      alert("Please fill all details");
+      return;
+    }
+
+    alert("Order placed successfully!");
+    cart = [];
+    updateCart();
+    document.getElementById("checkout").style.display = "none";
+  }
+</script>
+
+</body>
+</html>
